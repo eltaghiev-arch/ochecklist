@@ -62,39 +62,50 @@
         // НАСТРОЙКИ:
         // ==========================================
         
-        // 1. Укажите ваш статический IP-адрес рабочей сети
-        const WORK_IP = "ВАШ_СТАТИЧЕСКИЙ_IP"; 
-
-        // 2. Вставьте ссылку на вашу Google Форму
-        const GOOGLE_FORM_URL = "https://forms.gle/7x4JbEUSKU6BRAX18";
+        const WORK_IP = "185.220.183.116"; 
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfxJdh-gdQXgnHZy63IDBs_mUEzQYN30-2AXrRzn1E_DQFgTg/viewform?usp=header";
 
         // ==========================================
 
-        fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
-                const userIp = data.ip.trim();
-                
-                if (userIp === WORK_IP.trim()) {
-                    // IP совпал — мгновенно перенаправляем на форму
-                    window.location.href = GOOGLE_FORM_URL;
-                } else {
-                    // IP не совпал — показываем сообщение об ошибке
-                    document.getElementById('card').innerHTML = `
-                        <div class="icon">🚫</div>
-                        <h2 class="error-title">Доступ ограничен</h2>
-                        <p>Чек-лист открытия можно заполнить только при подключении к рабочей сети Wi-Fi.</p>
-                        <div class="ip-info">Ваш IP: ${185.220.183.116}</div>
-                    `;
-                }
-            })
-            .catch(err => {
+        async function getIP() {
+            // Способ 1: Использование надежного сервиса ipapi.co
+            try {
+                const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+                const data = await res.json();
+                if (data && data.ip) return data.ip;
+            } catch (e) {}
+
+            // Способ 2: Запасной сервис ipify
+            try {
+                const res = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+                const data = await res.json();
+                if (data && data.ip) return data.ip;
+            } catch (e) {}
+
+            throw new Error("Не удалось получить IP");
+        }
+
+        getIP().then(userIp => {
+            const cleanUserIp = userIp.trim();
+            const cleanWorkIp = WORK_IP.trim();
+
+            if (cleanUserIp === cleanWorkIp) {
+                window.location.href = GOOGLE_FORM_URL;
+            } else {
                 document.getElementById('card').innerHTML = `
-                    <div class="icon">⚠️</div>
-                    <h2 class="error-title">Ошибка проверки</h2>
-                    <p>Не удалось определить ваше сетевое подключение. Попробуйте обновить страницу.</p>
+                    <div class="icon">🚫</div>
+                    <h2 class="error-title">Доступ ограничен</h2>
+                    <p>Чек-лист открытия можно заполнить только при подключении к рабочей сети Wi-Fi.</p>
+                    <div class="ip-info">Ваш IP: ${cleanUserIp}</div>
                 `;
-            });
+            }
+        }).catch(err => {
+            document.getElementById('card').innerHTML = `
+                <div class="icon">⚠️</div>
+                <h2 class="error-title">Ошибка проверки</h2>
+                <p>Не удалось определить ваше сетевое подключение. Попробуйте обновить страницу или открыть в обычном Chrome/Safari.</p>
+            `;
+        });
     </script>
 </body>
 </html>
