@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка сети...</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .icon { font-size: 48px; margin-bottom: 16px; }
+        h2 { color: #1a1a1a; margin-bottom: 12px; font-size: 20px; }
+        p { color: #666666; font-size: 15px; line-height: 1.5; margin-bottom: 20px; }
+        .ip-info {
+            background: #f0f2f5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #555;
+            display: inline-block;
+        }
+        .error-title { color: #d32f2f; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="card">
+        <div class="spinner"></div>
+        <h2>Проверка подключения...</h2>
+        <p>Пожалуйста, подождите. Проверяем ваш Wi-Fi доступ.</p>
+    </div>
+
+    <script>
+        // ==========================================
+        // НАСТРОЙКИ:
+        // ==========================================
+        
+        // 1. Укажите ваш статический IP-адрес рабочей сети
+        const WORK_IP = "ВАШ_СТАТИЧЕСКИЙ_IP"; 
+
+        // 2. Вставьте ссылку на вашу Google Форму
+        const GOOGLE_FORM_URL = "https://forms.gle/7x4JbEUSKU6BRAX18";
+
+        // ==========================================
+
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                const userIp = data.ip.trim();
+                
+                if (userIp === WORK_IP.trim()) {
+                    // IP совпал — мгновенно перенаправляем на форму
+                    window.location.href = GOOGLE_FORM_URL;
+                } else {
+                    // IP не совпал — показываем сообщение об ошибке
+                    document.getElementById('card').innerHTML = `
+                        <div class="icon">🚫</div>
+                        <h2 class="error-title">Доступ ограничен</h2>
+                        <p>Чек-лист открытия можно заполнить только при подключении к рабочей сети Wi-Fi.</p>
+                        <div class="ip-info">Ваш IP: ${185.220.183.116}</div>
+                    `;
+                }
+            })
+            .catch(err => {
+                document.getElementById('card').innerHTML = `
+                    <div class="icon">⚠️</div>
+                    <h2 class="error-title">Ошибка проверки</h2>
+                    <p>Не удалось определить ваше сетевое подключение. Попробуйте обновить страницу.</p>
+                `;
+            });
+    </script>
+</body>
+</html>
